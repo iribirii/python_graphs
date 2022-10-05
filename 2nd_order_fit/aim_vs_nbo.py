@@ -1,30 +1,4 @@
-def main():
-    '''
-    Example of a second order polynomial fitted plot.
-    Fits the curve, calculates R2 and shows the equation.
-    '''
-    fig, ax = plt.subplots(1,1,figsize=(12,6))
-
-    ax.set_title('Example graph with 2nd order polynomial correlation')
-
-    aim_vs_nbo('./example_1.csv', '#8f96bf', ax, 'Xvalues', 'Yvalues')
-    aim_vs_nbo('./example_2.csv', '#716cb0', ax, 'Xvalues', 'Yvalues')
-    aim_vs_nbo('./example_3.csv', '#333c70', ax, 'Xvalues', 'Yvalues')
-
-    ax.legend(
-        frameon=False,      # No box for the legend
-        markerfirst=False,  # Put the markers after the text (left aligned)
-        loc='lower right'   # Locate legend at the bottom right
-    )
-
-    plt.savefig(
-        'example_2nd_order_polynomial_fit.png',
-        dpi=300,
-        transparent=True,
-        format='png'
-    )
-
-def aim_vs_nbo(filename, color, ax, col_x, col_y):
+def aim_vs_nbo(filename, color, ax, col_x, col_y, d_label):
     
     ''' 
     Function to create AIM rhos vs NBO E(2) graphs including 2nd order polynomial correlation.
@@ -43,10 +17,19 @@ def aim_vs_nbo(filename, color, ax, col_x, col_y):
     
     :param col_y: column name for y values
     :type col_y: string
+
+    :param d_label: label for the current data plotted
+    :type d_label: string
     '''
     
+    import pandas as pd
+    from scipy.optimize import curve_fit
+    from sklearn.metrics import r2_score
+    import numpy as np
+    import matplotlib
+
     # Read data
-    d = pd.read_csv(filename, delimiter='\\t', header=None)
+    d = pd.read_csv(filename, delimiter=',')
 
     # Data to numpy for plotting
     x = d[col_x].to_numpy()
@@ -68,13 +51,13 @@ def aim_vs_nbo(filename, color, ax, col_x, col_y):
     matplotlib.rc('font', **font)
 
     # Change the labels of the axis
-    ax.set_xlabel(r'{col_x}')
-    ax.set_ylabel(r'{col_y}')
+    ax.set_xlabel(f'{col_x}')
+    ax.set_ylabel(f'{col_y}')
 
     # Plot the original values with scattering
     ax.scatter(x, 
                y, 
-               label=filename.split('/')[-1].split('.')[0].split('-')[-2].upper(), 
+               label=d_label,
                color=color)
 
     # Plot the fitted curve 
@@ -82,7 +65,7 @@ def aim_vs_nbo(filename, color, ax, col_x, col_y):
             y_fit,
             color=color,
             lw=1,
-            label=f'$y = {popt[0]:.2f}x^2 + {popt[1]:.2f}x, r^2={r2:.4f}$')\n"
+            label=f'$y = {popt[0]:.2f}x^2 + {popt[1]:.2f}x, r^2={r2:.4f}$')
 
 def fit_func(x, a, b):
     '''
@@ -100,3 +83,35 @@ def fit_func(x, a, b):
     '''
     
     return a * x**2 + b * x
+
+def main():
+    '''
+    Example of a second order polynomial fitted plot.
+    Fits the curve, calculates R2 and shows the equation.
+    '''
+
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(1,1,figsize=(12,6))
+
+    ax.set_title('Example graph with 2nd order polynomial correlation')
+    aim_vs_nbo('./example_1.csv', '#8f96bf', ax, 'Xvalues', 'Yvalues', 'data1')
+    aim_vs_nbo('./example_2.csv', '#716cb0', ax, 'Xvalues', 'Yvalues', 'data2')
+    aim_vs_nbo('./example_3.csv', '#333c70', ax, 'Xvalues', 'Yvalues', 'data3')
+
+    ax.legend(
+        frameon=False,      # No box for the legend
+        markerfirst=False,  # Put the markers after the text (left aligned)
+        loc='lower right'   # Locate legend at the bottom right
+    )
+
+    plt.savefig(
+        'example_2nd_order_polynomial_fit.png',
+        dpi=300,
+        transparent=True,
+        format='png'
+    )
+
+
+if __name__ == '__main__':
+    main()
